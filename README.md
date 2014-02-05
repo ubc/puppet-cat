@@ -9,7 +9,7 @@ NOTE: The SQL for creating the structures and admin account still need to be man
 
 Dependencies
 ------------
-puppet-module/puppetlabs-apache
-puppet-module/git
-puppet-module/vcsrepo
-puppet-module/evenup-tomcat
+* puppet-module/puppetlabs-apache
+* puppet-module/git
+* puppet-module/vcsrepo
+* puppet-module/evenup-tomcat
