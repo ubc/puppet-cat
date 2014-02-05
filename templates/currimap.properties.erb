@@ -1,0 +1,7 @@
+#term folder location where tomcat will store temporaty files for excel file generation as well as course outline uploads
+tempFileFolder=<%= @temp_dir %>
+
+#if your organization has an ldap service with the ability to look up 
+#users based on ldap, set the below property to N.  See getUserData method in src/ca/usask/ocd/ldap/LdapConnection.java for 
+#ldap properties used.
+ldap.enabled=<%= @ldap_enabled %>
