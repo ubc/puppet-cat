@@ -21,6 +21,7 @@ class cat (
   $ssl_key  = undef,
   $ssl_cert_location = undef,
   $ssl_key_location = undef,
+  $git_repo = "https://github.com/usaskulc/cat.git",
 ) {
   class { '::mysql::server':
     root_password => $db_rootpwd, 
@@ -45,7 +46,7 @@ class cat (
   class { 'tomcat': }
 
 
-  tomcat::vhost { 'cat.elearning.ubc.ca':
+  tomcat::vhost { $host:
     contexts => { 'base' => 'ROOT', 'path' => '' },
   }
 
@@ -53,7 +54,7 @@ class cat (
     ensure   => present,
     provider => git,
     require  => [ Package["git"] ],
-    source   => "https://github.com/usaskulc/cat.git",
+    source   => $git_repo,
     revision => $revision,
     notify => Exec['compile_war_file'],
   } ->
