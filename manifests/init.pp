@@ -12,6 +12,7 @@ class cat (
   $app = 'cat',
   $site = $fqdn,
   $cas_login = undef,
+  $cas_logout = undef,
   $cas_validation = undef,
   $port     = 80,
   $host     = $fqdn,
@@ -21,8 +22,15 @@ class cat (
   $ssl_key  = undef,
   $ssl_cert_location = undef,
   $ssl_key_location = undef,
-  $git_repo = "https://github.com/usaskulc/cat.git",
+  $git_repo = "https://github.com/ubc/cat.git",
+  $user = 'tomcat',
+  $group = 'tomcat',
+  $debug_level = 'ERROR',
 ) {
+  class { 'selinux':
+    mode => 'permissive'
+  }
+
   class { '::mysql::server':
     root_password => $db_rootpwd, 
     override_options => {
@@ -59,37 +67,37 @@ class cat (
     notify => Exec['compile_war_file'],
   } ->
 
-  file { "${code_base}/cat/conf/example.yourdomain.edu/context.xml":
+  file { "${code_base}/conf/example.yourdomain.edu/context.xml":
     ensure => present,
     content => template('cat/context.xml.erb'),
     notify => Exec['compile_war_file'],
   } ->
   
-  file { "${code_base}/cat/conf/example.yourdomain.edu/database.properties":
+  file { "${code_base}/conf/example.yourdomain.edu/database.properties":
     ensure => present,
     content => template('cat/database.properties.erb'),
     notify => Exec['compile_war_file'],
   } ->
   
-  file { "${code_base}/cat/conf/example.yourdomain.edu/hibernate.cfg.xml":
+  file { "${code_base}/conf/example.yourdomain.edu/hibernate.cfg.xml":
     ensure => present,
     content => template('cat/hibernate.cfg.xml.erb'),
     notify => Exec['compile_war_file'],
   } ->
 
-  file { "${code_base}/cat/conf/example.yourdomain.edu/currimap.properties":
+  file { "${code_base}/conf/example.yourdomain.edu/currimap.properties":
     ensure => present,
     content => template('cat/currimap.properties.erb'),
     notify => Exec['compile_war_file'],
   } ->
   
-  file { "${code_base}/cat/conf/example.yourdomain.edu/log4j.properties":
+  file { "${code_base}/conf/example.yourdomain.edu/log4j.properties":
     ensure => present,
     content => template('cat/log4j.properties.erb'),
     notify => Exec['compile_war_file'],
   } ->
 
-  file { "${code_base}/cat/conf/example.yourdomain.edu/web.xml":
+  file { "${code_base}/conf/example.yourdomain.edu/web.xml":
     ensure => present,
     content => template('cat/web.xml.erb'),
     notify => Exec['compile_war_file'],
@@ -97,7 +105,7 @@ class cat (
 
   exec { "compile_war_file": 
     command => "ant dist",
-    cwd => "${code_base}/cat",
+    cwd => "${code_base}",
     path => '/usr/bin:/bin',
     logoutput   => on_failure,
     refreshonly => true,
@@ -105,7 +113,7 @@ class cat (
 
   file { "${tomcat::sites_dir}/${site}/${app}.war":
     ensure => present,
-    source => "${code_base}/cat/cat.war",
+    source => "${code_base}/cat.war",
     notify => Exec["clean_${tomcat::sites_dir}/${site}/${app}"],
   }
 
@@ -113,8 +121,8 @@ class cat (
     command     => "rm -rf ${app} ; mkdir ${app} ; unzip ${app}.war -d ${app}/",
     cwd         => "${tomcat::sites_dir}/${site}",
     path        => '/usr/bin:/bin',
-    user        => tomcat,
-    group       => tomcat,
+    user        => $user,
+    group       => $group,
     logoutput   => on_failure,
     refreshonly => true,
     notify      => Class['tomcat::service'],
@@ -168,6 +176,12 @@ class cat (
     redirect_source => ['/'],
     redirect_dest => ['/cat'],
     redirect_status => ['permanent'],
+  }
+
+  file {$log_file:
+    ensure => present,
+    owner => $user,
+    group => $group,
   }
 
   firewall { '100 allow http and https access':

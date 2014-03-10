@@ -1,6 +1,6 @@
 # Log to output file
-log4j.rootLogger=ERROR, file
-log4j.logger.ca.usask.ocd=ERROR, file
+log4j.rootLogger=<%= @debug_level %>, file
+log4j.logger.ca.usask.ocd=<%= @debug_level %>, file
 log4j.additivity.ca.usask.ocd=false
 log4j.logger.net.sf.hibernate.cfg=warn
 log4j.logger.com.mchange.v2=warn
